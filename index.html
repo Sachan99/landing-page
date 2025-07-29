@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Wolves Game</title>
+    <title>River - Werewolf Game</title>
     <style>
         * {
             margin: 0;
@@ -75,6 +75,40 @@
             transform: translateY(0);
         }
 
+        .referral-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .referral-code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         .disclaimer {
             font-size: 0.8rem;
             opacity: 0.7;
@@ -130,6 +164,13 @@
         <a href="https://storage.googleapis.com/river-app-downloads/river-app-release.apk" class="download-btn" id="downloadBtn">
             Download APK
         </a>
+        
+        <div class="referral-section" id="referralSection">
+            <h3>🎁 Special Referral Code</h3>
+            <p>Use this code during registration to get bonus rewards:</p>
+            <div class="referral-code" id="referralCode"></div>
+            <button class="copy-btn" onclick="copyReferralCode()">Copy Code</button>
+        </div>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
@@ -198,12 +239,34 @@
             // Track download attempt
             trackEvent('apk_download_attempted');
             
+            // Show referral code if available
+            if (promotionData.referralCode) {
+                document.getElementById('referralCode').textContent = promotionData.referralCode;
+                document.getElementById('referralSection').style.display = 'block';
+            }
+            
             // Simulate a small delay for better UX
             setTimeout(() => {
                 // Redirect to APK download
                 window.location.href = this.href;
             }, 500);
         });
+
+        // Copy referral code to clipboard
+        function copyReferralCode() {
+            const referralCode = promotionData.referralCode;
+            if (referralCode) {
+                navigator.clipboard.writeText(referralCode).then(() => {
+                    const copyBtn = document.querySelector('.copy-btn');
+                    copyBtn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = 'Copy Code';
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            }
+        }
 
         // Track when user leaves the page
         window.addEventListener('beforeunload', function() {
