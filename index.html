@@ -49,32 +49,6 @@
             line-height: 1.5;
         }
 
-        .download-btn {
-            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-            color: white;
-            border: none;
-            padding: 18px 40px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
-            margin-bottom: 20px;
-            display: block;
-            width: 100%;
-            text-decoration: none;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(5, 150, 105, 0.6);
-        }
-
-        .download-btn:active {
-            transform: translateY(0);
-        }
-
         .referral-section {
             background: rgba(255, 255, 255, 0.1);
             padding: 20px;
@@ -107,6 +81,32 @@
 
         .copy-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
+            margin-bottom: 20px;
+            display: block;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(5, 150, 105, 0.6);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
         }
 
         .disclaimer {
@@ -161,16 +161,16 @@
         <h1 class="title">AI-Wolves Game</h1>
         <p class="description">Join the ultimate AI-Wolves game experience with friends!</p>
         
-        <a href="https://storage.googleapis.com/river-app-downloads/river-app-release.apk" class="download-btn" id="downloadBtn">
-            Download APK
-        </a>
-        
         <div class="referral-section" id="referralSection">
             <h3>🎁 Special Referral Code</h3>
             <p>Use this code during registration to get bonus rewards:</p>
             <div class="referral-code" id="referralCode"></div>
             <button class="copy-btn" onclick="copyReferralCode()">Copy Code</button>
         </div>
+        
+        <a href="https://storage.googleapis.com/river-app-downloads/river-app-release.apk" class="download-btn" id="downloadBtn">
+            Download APK
+        </a>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
@@ -200,6 +200,12 @@
             platform: urlParams.get('platform') || 'android',
             timestamp: new Date().toISOString()
         };
+
+        // Show referral code immediately if available
+        if (promotionData.referralCode) {
+            document.getElementById('referralCode').textContent = promotionData.referralCode;
+            document.getElementById('referralSection').style.display = 'block';
+        }
 
         // Track landing page view
         function trackEvent(event, details = {}) {
@@ -238,12 +244,6 @@
             
             // Track download attempt
             trackEvent('apk_download_attempted');
-            
-            // Show referral code if available
-            if (promotionData.referralCode) {
-                document.getElementById('referralCode').textContent = promotionData.referralCode;
-                document.getElementById('referralSection').style.display = 'block';
-            }
             
             // Simulate a small delay for better UX
             setTimeout(() => {
