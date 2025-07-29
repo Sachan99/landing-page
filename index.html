@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>River - Werewolf Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #1d4ed8 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .description {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
+            margin-bottom: 20px;
+            display: block;
+            width: 100%;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(5, 150, 105, 0.6);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .description {
+                font-size: 1rem;
+            }
+            
+            .download-btn {
+                padding: 16px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://storage.googleapis.com/river-app-downloads/APP_Icon.png" alt="River App Icon" class="logo">
+        <h1 class="title">River - Werewolf Game</h1>
+        <p class="description">Join the ultimate werewolf game experience with friends!</p>
+        
+        <a href="https://storage.googleapis.com/river-app-downloads/river-app-release.apk" class="download-btn" id="downloadBtn">
+            Download APK
+        </a>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Preparing download...</p>
+        </div>
+        
+        <p class="disclaimer">
+            By downloading, you agree to our Terms of Service and Privacy Policy
+        </p>
+    </div>
+
+    <script>
+        // Parse URL parameters for tracking
+        const urlParams = new URLSearchParams(window.location.search);
+        const promotionData = {
+            utm_source: urlParams.get('utm_source'),
+            utm_medium: urlParams.get('utm_medium'),
+            utm_campaign: urlParams.get('utm_campaign'),
+            utm_term: urlParams.get('utm_term'),
+            utm_content: urlParams.get('utm_content'),
+            specialist_id: urlParams.get('specialist_id'),
+            channel: urlParams.get('channel'),
+            referralCode: urlParams.get('referralCode'),
+            install_source: urlParams.get('install_source') || 'direct_apk',
+            download_method: urlParams.get('download_method') || 'direct_apk',
+            app_version: urlParams.get('app_version') || '1.0.0',
+            platform: urlParams.get('platform') || 'android',
+            timestamp: new Date().toISOString()
+        };
+
+        // Track landing page view
+        function trackEvent(event, details = {}) {
+            const trackingData = {
+                event,
+                details: { ...promotionData, ...details },
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                referrer: document.referrer
+            };
+
+            // Send to your backend
+            fetch('https://your-backend-url.com/api/track', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(trackingData)
+            }).catch(error => {
+                console.log('Tracking error:', error);
+            });
+
+            // Also log to console for debugging
+            console.log('Tracking event:', event, trackingData);
+        }
+
+        // Track page load
+        trackEvent('landing_page_viewed');
+
+        // Handle download button click
+        document.getElementById('downloadBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            
+            // Track download attempt
+            trackEvent('apk_download_attempted');
+            
+            // Simulate a small delay for better UX
+            setTimeout(() => {
+                // Redirect to APK download
+                window.location.href = this.href;
+            }, 500);
+        });
+
+        // Track when user leaves the page
+        window.addEventListener('beforeunload', function() {
+            trackEvent('landing_page_exited');
+        });
+    </script>
+</body>
+</html> 
