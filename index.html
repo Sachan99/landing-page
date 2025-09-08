@@ -130,6 +130,85 @@
             margin: 0 auto 10px;
         }
 
+        /* Email/Name Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #0b1f5e;
+            color: #fff;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+        }
+        .modal h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+        .modal p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        .modal .form-field {
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .modal input[type="email"],
+        .modal input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            font-size: 1rem;
+        }
+        .modal .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .modal .primary-btn {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+        }
+        .modal .secondary-btn {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+        }
+        .modal .error-text {
+            color: #fecaca;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: none;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -180,6 +259,23 @@
         <p class="disclaimer">
             By downloading, you agree to our Terms of Service and Privacy Policy
         </p>
+    </div>
+
+    <!-- Email/Name Collection Modal -->
+    <div class="modal" id="emailModal">
+        <div class="modal-content">
+            <h3>Join the AI-Wolves Community</h3>
+            <p>Enter your details to receive updates and continue to download.</p>
+            <div class="error-text" id="formError">Please enter a valid name and email.</div>
+            <form id="userForm">
+                <input class="form-field" type="text" id="userName" placeholder="Your name" autocomplete="name" required>
+                <input class="form-field" type="email" id="userEmail" placeholder="Your email address" autocomplete="email" required>
+                <div class="actions">
+                    <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+                    <button type="submit" class="primary-btn">Continue</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -238,12 +334,20 @@
         // Handle download button click
         document.getElementById('downloadBtn').addEventListener('click', function(e) {
             e.preventDefault();
+
+            // Ensure user data exists before proceeding
+            const stored = localStorage.getItem('aiWolvesUserData');
+            if (!stored) {
+                openModal();
+                return;
+            }
             
             // Show loading
             document.getElementById('loading').style.display = 'block';
             
             // Track download attempt
-            trackEvent('apk_download_attempted');
+            const { email, name } = JSON.parse(stored);
+            trackEvent('apk_download_attempted', { email, name });
             
             // Simulate a small delay for better UX
             setTimeout(() => {
@@ -271,6 +375,58 @@
         // Track when user leaves the page
         window.addEventListener('beforeunload', function() {
             trackEvent('landing_page_exited');
+        });
+
+        // -------- Email/Name Modal Logic --------
+        const emailModal = document.getElementById('emailModal');
+        const cancelModalBtn = document.getElementById('cancelModal');
+        const formError = document.getElementById('formError');
+
+        function openModal() {
+            emailModal.style.display = 'flex';
+            formError.style.display = 'none';
+        }
+
+        function closeModal() {
+            emailModal.style.display = 'none';
+        }
+
+        // Show modal on first visit if no stored data
+        document.addEventListener('DOMContentLoaded', function() {
+            const stored = localStorage.getItem('aiWolvesUserData');
+            if (!stored) {
+                openModal();
+            }
+        });
+
+        // Close modal
+        cancelModalBtn.addEventListener('click', function() {
+            closeModal();
+        });
+
+        // Basic validators
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // Handle form submit
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = (document.getElementById('userName').value || '').trim();
+            const email = (document.getElementById('userEmail').value || '').trim().toLowerCase();
+
+            if (!name || !isValidEmail(email)) {
+                formError.style.display = 'block';
+                return;
+            }
+
+            const userData = { name, email, timestamp: new Date().toISOString() };
+            localStorage.setItem('aiWolvesUserData', JSON.stringify(userData));
+
+            // Track registration with user details merged with promotion data
+            trackEvent('user_registered', { name, email });
+
+            closeModal();
         });
     </script>
 </body>
