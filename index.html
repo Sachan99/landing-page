@@ -109,6 +109,25 @@
             transform: translateY(0);
         }
 
+        /* Discord button */
+        .discord-btn {
+            background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.35);
+            margin-bottom: 14px;
+            display: none;
+            width: 100%;
+            text-decoration: none;
+        }
+        .discord-btn:hover { opacity: 0.95; }
+
         .disclaimer {
             font-size: 0.8rem;
             opacity: 0.7;
@@ -247,6 +266,7 @@
             <button class="copy-btn" onclick="copyReferralCode()">Copy Code</button>
         </div>
         
+        <a href="#" class="discord-btn" id="discordBtn">Join our Discord</a>
         <a href="https://storage.googleapis.com/river-app-downloads/river-app-release.apk" class="download-btn" id="downloadBtn">
             Download APK
         </a>
@@ -328,6 +348,9 @@
             console.log('Tracking event:', event, trackingData);
         }
 
+        // Config
+        const DISCORD_INVITE = 'https://discord.gg/qpjxbdreBj'; // update if needed
+
         // Track page load
         trackEvent('landing_page_viewed');
 
@@ -354,6 +377,15 @@
                 // Redirect to APK download
                 window.location.href = this.href;
             }, 500);
+        });
+
+        // Handle Discord click (optional)
+        document.getElementById('discordBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const stored = localStorage.getItem('aiWolvesUserData');
+            const details = stored ? JSON.parse(stored) : {};
+            trackEvent('discord_join_clicked', { email: details.email, name: details.name });
+            window.location.href = DISCORD_INVITE;
         });
 
         // Copy referral code to clipboard
@@ -397,6 +429,10 @@
             if (!stored) {
                 openModal();
             }
+            // If already registered, show Discord button too
+            if (stored) {
+                document.getElementById('discordBtn').style.display = 'block';
+            }
         });
 
         // Close modal
@@ -427,6 +463,8 @@
             trackEvent('user_registered', { name, email });
 
             closeModal();
+            // Reveal Discord button after successful registration
+            document.getElementById('discordBtn').style.display = 'block';
         });
     </script>
 </body>
