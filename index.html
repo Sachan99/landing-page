@@ -301,7 +301,24 @@
     <script>
         // Parse URL parameters for tracking
         const urlParams = new URLSearchParams(window.location.search);
-        const promotionData = {
+        
+        // Detect actual platform
+        function detectPlatform() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.includes('android')) return 'android';
+            if (userAgent.includes('iphone') || userAgent.includes('ipad')) return 'ios';
+            if (userAgent.includes('windows')) return 'windows';
+            if (userAgent.includes('mac')) return 'mac';
+            return 'unknown';
+        }
+        
+        // Detect actual app version (from URL or default)
+        function getAppVersion() {
+            return urlParams.get('app_version') || '1.0.0';
+        }
+        
+        // Base promotion data (static from URL)
+        const basePromotionData = {
             utm_source: urlParams.get('utm_source'),
             utm_medium: urlParams.get('utm_medium'),
             utm_campaign: urlParams.get('utm_campaign'),
@@ -310,12 +327,19 @@
             specialist_id: urlParams.get('specialist_id'),
             channel: urlParams.get('channel'),
             referralCode: urlParams.get('referralCode'),
-            install_source: urlParams.get('install_source') || 'direct_apk',
-            download_method: urlParams.get('download_method') || 'direct_apk',
-            app_version: urlParams.get('app_version') || '1.0.0',
-            platform: urlParams.get('platform') || 'android',
+            install_source: urlParams.get('install_source') || 'deep_link',
             timestamp: new Date().toISOString()
         };
+        
+        // Dynamic data that changes based on user actions
+        let dynamicData = {
+            download_method: 'not_attempted',
+            app_version: getAppVersion(),
+            platform: detectPlatform()
+        };
+        
+        // Combine base and dynamic data
+        const promotionData = { ...basePromotionData, ...dynamicData };
 
         // Show referral code immediately if available
         if (promotionData.referralCode) {
@@ -325,17 +349,20 @@
 
         // Track landing page view
         function trackEvent(event, details = {}) {
+            // Update promotion data with current dynamic data
+            const currentPromotionData = { ...basePromotionData, ...dynamicData };
+            
             const trackingData = {
                 event,
-                details: { ...promotionData, ...details },
+                details: { ...currentPromotionData, ...details },
                 timestamp: new Date().toISOString(),
                 userAgent: navigator.userAgent,
                 referrer: document.referrer
             };
 
             // Send to your backend
-            fetch('https://3945ca250043.ngrok-free.app/api/influencer-referrals/track', {
             // fetch('http://localhost:8000/api/influencer-referrals/track', {
+            fetch('https://3945ca250043.ngrok-free.app/api/influencer-referrals/track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -350,8 +377,7 @@
         }
 
         // Config
-        const DISCORD_INVITE = 'https://discord.gg/863PFVbge7';
-        // const DISCORD_INVITE = 'https://discord.gg/863PFVbge7'; // update if needed
+        const DISCORD_INVITE = 'https://discord.gg/863PFVbge7'; // update if needed
 
         // Track page load
         trackEvent('landing_page_viewed');
@@ -367,12 +393,22 @@
                 return;
             }
             
+            // Update dynamic data for download
+            dynamicData.download_method = 'direct_apk';
+            const updatedPromotionData = { ...basePromotionData, ...dynamicData };
+            
             // Show loading
             document.getElementById('loading').style.display = 'block';
             
-            // Track download attempt
+            // Track download attempt with updated data
             const { email, name } = JSON.parse(stored);
-            trackEvent('apk_download_attempted', { email, name });
+            trackEvent('apk_download_attempted', { 
+                email, 
+                name,
+                download_method: 'direct_apk',
+                app_version: dynamicData.app_version,
+                platform: dynamicData.platform
+            });
             
             // Simulate a small delay for better UX
             setTimeout(() => {
