@@ -334,7 +334,7 @@
             };
 
             // Send to your backend
-            fetch('https://your-backend-url.com/api/track', {
+            fetch('http://localhost:8000/api/influencer-referrals/track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -349,7 +349,7 @@
         }
 
         // Config
-        const DISCORD_INVITE = 'https://discord.gg/qpjxbdreBj'; // update if needed
+        const DISCORD_INVITE = 'https://discord.gg/863PFVbge7'; // update if needed
 
         // Track page load
         trackEvent('landing_page_viewed');
