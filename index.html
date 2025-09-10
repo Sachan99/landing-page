@@ -334,7 +334,8 @@
             };
 
             // Send to your backend
-            fetch('http://localhost:8000/api/influencer-referrals/track', {
+            fetch('https://your-ngrok-url.ngrok.io/api/influencer-referrals/track', {
+            // fetch('http://localhost:8000/api/influencer-referrals/track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -349,7 +350,8 @@
         }
 
         // Config
-        const DISCORD_INVITE = 'https://discord.gg/863PFVbge7'; // update if needed
+        const DISCORD_INVITE = 'https://discord.gg/863PFVbge7';
+        // const DISCORD_INVITE = 'https://discord.gg/863PFVbge7'; // update if needed
 
         // Track page load
         trackEvent('landing_page_viewed');
