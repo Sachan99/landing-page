@@ -228,6 +228,41 @@
             display: none;
         }
 
+        /* Channel Detection Styles */
+        .channel-info {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .channel-info h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+            color: #f0f9ff;
+        }
+
+        .channel-info p {
+            margin: 0;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        .channel-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: capitalize;
+            display: inline-block;
+            margin-left: 4px;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -264,6 +299,12 @@
             <p>Use this code during registration to get bonus rewards:</p>
             <div class="referral-code" id="referralCode"></div>
             <button class="copy-btn" onclick="copyReferralCode()">Copy Code</button>
+        </div>
+        
+        <!-- Channel Detection Indicator -->
+        <div class="channel-info" id="channelInfo" style="display: none;">
+            <h3>📍 Detected Source</h3>
+            <p>You came from: <span id="detectedChannel" class="channel-badge"></span></p>
         </div>
         
         <a href="#" class="discord-btn" id="discordBtn">Join our Discord</a>
@@ -312,12 +353,108 @@
             return 'unknown';
         }
         
+        // Dynamic channel detection - detects which platform/channel user came from
+        function detectChannel() {
+            console.log('🔍 Detecting channel...');
+            
+            // Method 1: Check referrer URL (most reliable)
+            const referrer = document.referrer;
+            console.log('📍 Referrer:', referrer);
+            
+            if (referrer) {
+                const channelMap = {
+                    'youtube.com': 'youtube',
+                    'youtu.be': 'youtube',
+                    'tiktok.com': 'tiktok',
+                    'vm.tiktok.com': 'tiktok',
+                    'instagram.com': 'instagram',
+                    'twitter.com': 'twitter',
+                    'x.com': 'twitter',
+                    'reddit.com': 'reddit',
+                    'facebook.com': 'facebook',
+                    'fb.com': 'facebook',
+                    'linkedin.com': 'linkedin',
+                    'discord.com': 'discord',
+                    'discord.gg': 'discord',
+                    'telegram.org': 'telegram',
+                    't.me': 'telegram',
+                    'snapchat.com': 'snapchat',
+                    'pinterest.com': 'pinterest',
+                    'twitch.tv': 'twitch'
+                };
+                
+                for (const [domain, channel] of Object.entries(channelMap)) {
+                    if (referrer.toLowerCase().includes(domain)) {
+                        console.log('✅ Channel detected from referrer:', channel);
+                        return channel;
+                    }
+                }
+            }
+            
+            // Method 2: Check UTM parameters (if channel is specified in URL)
+            const utmMedium = urlParams.get('utm_medium');
+            if (utmMedium && utmMedium !== 'dynamic' && utmMedium !== 'unknown') {
+                console.log('✅ Channel detected from UTM medium:', utmMedium);
+                return utmMedium;
+            }
+            
+            // Method 3: Check if channel is explicitly set in URL
+            const urlChannel = urlParams.get('channel');
+            if (urlChannel && urlChannel !== 'unknown') {
+                console.log('✅ Channel detected from URL parameter:', urlChannel);
+                return urlChannel;
+            }
+            
+            // Method 4: User Agent analysis for mobile apps
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.includes('tiktok')) return 'tiktok';
+            if (userAgent.includes('instagram')) return 'instagram';
+            if (userAgent.includes('youtube')) return 'youtube';
+            if (userAgent.includes('twitter')) return 'twitter';
+            
+            // Method 5: Check if user came from a social media app (mobile)
+            if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+                // User is in a PWA or mobile app
+                if (referrer.includes('youtube') || referrer.includes('tiktok')) {
+                    const detectedChannel = detectChannelFromReferrer(referrer);
+                    if (detectedChannel) return detectedChannel;
+                }
+            }
+            
+            // Fallback: Unknown channel
+            console.log('❌ Could not detect channel, using fallback');
+            return 'unknown';
+        }
+        
+        // Helper function to detect channel from referrer
+        function detectChannelFromReferrer(referrer) {
+            const socialPatterns = {
+                'youtube': /youtube\.com|youtu\.be/,
+                'tiktok': /tiktok\.com|vm\.tiktok\.com/,
+                'instagram': /instagram\.com/,
+                'twitter': /twitter\.com|x\.com/,
+                'reddit': /reddit\.com/,
+                'facebook': /facebook\.com|fb\.com/
+            };
+            
+            for (const [channel, pattern] of Object.entries(socialPatterns)) {
+                if (pattern.test(referrer)) {
+                    return channel;
+                }
+            }
+            return null;
+        }
+        
         // Detect actual app version (from URL or default)
         function getAppVersion() {
             return urlParams.get('app_version') || '1.0.0';
         }
         
-        // Base promotion data (static from URL)
+        // Detect channel dynamically
+        const detectedChannel = detectChannel();
+        console.log('🎯 Detected channel:', detectedChannel);
+        
+        // Base promotion data (static from URL + dynamic channel detection)
         const basePromotionData = {
             utm_source: urlParams.get('utm_source'),
             utm_medium: urlParams.get('utm_medium'),
@@ -325,7 +462,9 @@
             utm_term: urlParams.get('utm_term'),
             utm_content: urlParams.get('utm_content'),
             specialist_id: urlParams.get('specialist_id'),
-            channel: urlParams.get('channel'),
+            specialist_name: urlParams.get('specialist_name'),
+            specialist_email: urlParams.get('specialist_email'),
+            channel: detectedChannel, // Use dynamically detected channel
             referralCode: urlParams.get('referralCode'),
             install_source: urlParams.get('install_source') || 'deep_link',
             timestamp: new Date().toISOString()
@@ -346,6 +485,13 @@
             document.getElementById('referralCode').textContent = promotionData.referralCode;
             document.getElementById('referralSection').style.display = 'block';
         }
+        
+        // Show detected channel
+        if (detectedChannel && detectedChannel !== 'unknown') {
+            document.getElementById('detectedChannel').textContent = detectedChannel;
+            document.getElementById('channelInfo').style.display = 'block';
+            console.log('🎯 Displaying detected channel:', detectedChannel);
+        }
 
         // Track landing page view
         function trackEvent(event, details = {}) {
@@ -362,7 +508,7 @@
 
             // Send to your backend
             // fetch('http://localhost:8000/api/influencer-referrals/track', {
-            fetch('https://154d90e41f58.ngrok-free.app/api/influencer-referrals/track', {
+            fetch('https://3945ca250043.ngrok-free.app/api/influencer-referrals/track', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
