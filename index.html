@@ -455,18 +455,20 @@
         console.log('🎯 Detected channel:', detectedChannel);
         
         // Base promotion data (static from URL + dynamic channel detection)
+        // Support both short and long parameter names for backward compatibility
         const basePromotionData = {
-            utm_source: urlParams.get('utm_source'),
-            utm_medium: urlParams.get('utm_medium'),
-            utm_campaign: urlParams.get('utm_campaign'),
+            utm_source: urlParams.get('utm_source') || urlParams.get('s'),
+            utm_medium: urlParams.get('utm_medium') || urlParams.get('m'),
+            utm_campaign: urlParams.get('utm_campaign') || urlParams.get('c'),
             utm_term: urlParams.get('utm_term'),
             utm_content: urlParams.get('utm_content'),
-            specialist_id: urlParams.get('specialist_id'),
-            specialist_name: urlParams.get('specialist_name'),
-            specialist_email: urlParams.get('specialist_email'),
+            specialist_id: urlParams.get('specialist_id') || urlParams.get('id'),
+            specialist_name: urlParams.get('specialist_name') || urlParams.get('name'),
+            specialist_email: urlParams.get('specialist_email') || urlParams.get('email'),
             channel: detectedChannel, // Use dynamically detected channel
-            referralCode: urlParams.get('referralCode'),
-            install_source: urlParams.get('install_source') || 'deep_link',
+            referralCode: urlParams.get('referralCode') || urlParams.get('ref'),
+            install_source: urlParams.get('install_source') || urlParams.get('src') || 'deep_link',
+            app_version: urlParams.get('app_version') || urlParams.get('v'),
             timestamp: new Date().toISOString()
         };
         
